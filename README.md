@@ -1,5 +1,7 @@
 ## Pi HAT Sensor Data Collection & Visualization
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O4O111DFT3)
+
 This project collects sensor data from a Raspberry Pi HAT, sends it via a Python server over the local network, and visualizes the collected data in a chart.
 
 ### Features
