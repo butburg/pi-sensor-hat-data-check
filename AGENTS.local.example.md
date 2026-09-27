@@ -20,6 +20,11 @@ Copy to `AGENTS.local.md` (gitignored) and fill in your values. Skills refer to 
 - `<ha-config>` = config dir on the host (mounted as `/config`), e.g. `/path/to/homeassistant/`
 - Notes (e.g. managed by a NAS UI or not, API token available or not): …
 
+## Notes
+
+Facts about your own data history (quirks, when a column was added, …):
+- …
+
 ## Chart
 
 - `SENSOR_DATA_URL` = `http://<pi-host>:8765/two_week_merge.json` (env var for `visualize_sensors.py`)

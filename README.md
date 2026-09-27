@@ -97,7 +97,7 @@ are logged during that time.
 
 CSV columns: `timestamp, temperature, humidity, pressure (Pa), eco2, air_quality_percent,
 air_quality_score, gas_resistance (Ω)`. The merged JSON uses the same fields, with
-pressure in hPa. `gas_resistance` has been logged since 2026-09-27. Older rows have `null`.
+pressure in hPa.
 
 ## About the values
 
@@ -114,13 +114,6 @@ sensor that reacts to volatile organic compounds (VOCs).
 In Home Assistant, a new history row only appears when a value *changes*. Long flat
 stretches in the history therefore mean the value stayed on one step, not that data is
 missing.
-
-## Known data quirk
-
-Rows logged on 2026-09-27 between 01:24 and 19:47 have timestamps in the form
-`YYYY-MM-DD HH:SS`: the minute was lost because of a bug that has since been fixed. The
-rows are still in the right order. `visualize_sensors.py` estimates their times inside
-each hour.
 
 ## License
 

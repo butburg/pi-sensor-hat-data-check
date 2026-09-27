@@ -29,5 +29,5 @@ CSV cols: `timestamp,temperature,humidity,pressure(Pa),eco2,air_quality_percent,
 
 - CSV lines end `\r\n` (csv.writer) → sed on header needs `\r$`.
 - New CSV column → also patch header of today's CSV, and make merge_json tolerate missing values in old rows.
-- 2026-09-27 01:24–19:47 rows have `%H:%S` timestamps (minute lost, bug fixed) → never sort by timestamp string; merge_json keeps file order.
+- Legacy rows with `%H:%S` timestamps may exist (dates in `AGENTS.local.md` Notes) → never sort by timestamp string; merge_json keeps file order.
 - merge_json must write atomically (tmp + `os.replace`) — http.server else serves half files → `ValueError: Expected object or value` / HA `unavailable`.

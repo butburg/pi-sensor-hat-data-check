@@ -51,9 +51,7 @@ timestamp,temperature,humidity,pressure,eco2,air_quality_percent,air_quality_sco
 ```
 
 - `pressure` is in Pa in the CSV and in hPa in `two_week_merge.json`.
-- `gas_resistance` (Ω, raw BME688 reading) has been logged since 2026-09-27.
-- Rows from 2026-09-27 01:24–19:47 have `HH:SS` timestamps: the minute is missing because of a
-  bug that has since been fixed.
+- `gas_resistance` is the raw BME688 reading in Ω.
 
 ## Notes on the values
 
