@@ -11,3 +11,6 @@ wheels/
 
 # Generated chart (uv run visualize_sensors.py)
 sensor_chart.html
+
+# Local machine-specific agent config (template: AGENTS.local.example.md)
+AGENTS.local.md

@@ -20,10 +20,10 @@ CSV cols: `timestamp,temperature,humidity,pressure(Pa),eco2,air_quality_percent,
 
 ## Deploy / sync rules
 
-1. Edit locally in `pi/`, then `rsync -av --exclude venv --exclude data --exclude __pycache__ --exclude '*.log' --exclude '*.bak-*' --exclude baselines.txt --exclude system pi/ pi-sensor:pi-sensor-project/` (never `--delete`). `pi/system/` → install manually with sudo (`/etc/systemd/system/`, `daemon-reload`) / `crontab -e`.
+1. Edit locally in `pi/`, then `rsync -av --exclude venv --exclude data --exclude __pycache__ --exclude '*.log' --exclude '*.bak-*' --exclude baselines.txt --exclude system pi/ <pi-ssh>:pi-sensor-project/` (never `--delete`). `pi/system/` → install manually with sudo (`/etc/systemd/system/`, `daemon-reload`) / `crontab -e`.
 2. Drift check: same rsync with `-nci` (dry-run, checksum) in both directions; only `.d..t` dir lines = in sync. Pi changed? → pull into `pi/` first, then edit.
 3. Before editing on the Pi: `cp X X.bak-$(date +%F)`.
-4. monitor.py/config.py change → `sudo -n systemctl restart air-quality-monitor` → ~5 min baseline calibration, no rows meanwhile. merge_json.py → no restart, run it once to test.
+4. monitor.py/config.py change → `ssh <pi-ssh> sudo -n systemctl restart air-quality-monitor` → ~5 min baseline calibration, no rows meanwhile. merge_json.py → no restart, run it once to test.
 
 ## Gotchas
 

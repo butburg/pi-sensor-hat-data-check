@@ -29,7 +29,7 @@ Exact paths, container/service names, commands, ports, non-obvious rules, gotcha
 
 - Fragments over sentences; `key = value`, `A → B`, inline code, one-line YAML `{a: 1, b: 2}` when it fits.
 - Docs: one base URL + list of path suffixes, only pages worth reading.
-- Secrets/tokens never in skills.
+- Secrets/tokens never in skills. Repo is public: hosts, IPs, users, key paths, network layout → placeholder `<key>` in the skill, real value in `AGENTS.local.md` (gitignored) + key in `AGENTS.local.example.md`.
 - Learned something new the hard way (failed command, wrong assumption)? Add it as a gotcha line right away.
 
 ## Tightening existing skill
