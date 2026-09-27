@@ -1,7 +1,7 @@
 [project]
 name = "pi-sensor-hat-data-check"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pi HAT sensor data collection (Kitronik BME688) and chart visualization"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
