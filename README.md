@@ -27,14 +27,44 @@ BME688 on HAT
 | `pi/system/` | Copies of the systemd units and the crontab entry on the Pi |
 | `visualize_sensors.py` | Local chart generator |
 | `AGENTS.md`, `.github/skills/` | Instructions and skills for coding agents working on this project |
+| `AGENTS.local.example.md` | Template for your machine-specific agent config (copy to the gitignored `AGENTS.local.md`) |
 
-`pi/` is kept identical to the Pi: edit locally, then deploy (see below).
+## Setting up the Pi
+
+Tested on Raspberry Pi OS (Bookworm, Python 3.11) with the HAT attached and I²C enabled
+(`sudo raspi-config` → Interface Options → I2C). The systemd units and cron entry assume
+user `pi` and the project at `/home/pi/pi-sensor-project/`. Adjust the paths in
+`pi/system/` if yours differ.
+
+```bash
+# on your PC
+rsync -av pi/ pi@<pi-host>:pi-sensor-project/
+
+# on the Pi
+cd ~/pi-sensor-project
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+sudo cp system/*.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now air-quality-monitor csvserver
+crontab system/crontab   # replaces your crontab; use `crontab -e` to merge instead
+```
+
+`csvserver` serves the `data/` folder on port 8765 **without authentication** to everyone
+on your network. Don't forward that port to the internet.
+
+### Home Assistant (optional)
+
+Add a [RESTful](https://www.home-assistant.io/integrations/rest/) resource that polls
+`http://<pi-host>:8765/two_week_merge.json` and reads the latest row with
+`value_json[-1].<field>`, for example `value_json[-1].temperature`.
 
 ## Local chart
 
 Requires [uv](https://docs.astral.sh/uv/) and access to the Pi on the LAN.
 
 ```bash
+export SENSOR_DATA_URL=http://<pi-host>:8765/two_week_merge.json   # default: raspberrypi.local
 uv run visualize_sensors.py            # writes sensor_chart.html
 uv run visualize_sensors.py --help     # --url / --out options
 ```
@@ -45,19 +75,19 @@ the Windows default browser. The chart shows one panel per value, with night hou
 
 ## Working on the Pi
 
-SSH alias `pi-sensor` (`pi@<pi-host>`) is set up in `~/.ssh/config`.
+`pi/` is kept identical to the Pi: edit locally, then deploy.
 
 ```bash
-# Deploy local changes
+# Deploy local changes (never use --delete: data/ and venv/ only exist on the Pi)
 rsync -av --exclude venv --exclude data --exclude __pycache__ --exclude '*.log' \
   --exclude '*.bak-*' --exclude baselines.txt --exclude system \
-  pi/ pi-sensor:pi-sensor-project/
+  pi/ pi@<pi-host>:pi-sensor-project/
 
 # After changing monitor.py or config.py
-ssh pi-sensor 'sudo systemctl restart air-quality-monitor'
+ssh pi@<pi-host> 'sudo systemctl restart air-quality-monitor'
 
 # Live log
-ssh pi-sensor 'journalctl -u air-quality-monitor -f'
+ssh pi@<pi-host> 'journalctl -u air-quality-monitor -f'
 ```
 
 After a restart, the monitor recalibrates its baseline for about 5 minutes, so no rows
@@ -91,3 +121,8 @@ Rows logged on 2026-09-27 between 01:24 and 19:47 have timestamps in the form
 `YYYY-MM-DD HH:SS`: the minute was lost because of a bug that has since been fixed. The
 rows are still in the right order. `visualize_sensors.py` estimates their times inside
 each hour.
+
+## License
+
+[MIT](LICENSE). The example scripts in `pi/scripts/` are © Kitronik Ltd (also MIT), see
+[pi/scripts/README.md](pi/scripts/README.md).
