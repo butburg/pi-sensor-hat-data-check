@@ -50,35 +50,6 @@ def fetch_records(url, attempts=3):
     sys.exit(f"[ERROR] Could not load valid JSON from {url}")
 
 
-def parse_timestamps(df):
-    """Parse timestamps, repairing rows logged with the old '%H:%S' bug.
-
-    On 2026-09-27 (01:24-19:47) monitor.py logged 'YYYY-MM-DD HH:SS'
-    (minute missing). Those rows are still in logging order, so each one is
-    placed ~61 s (the logging cadence) from its neighbours inside its hour:
-    the first hour of a legacy block is anchored to the hour's end, all
-    others to the hour's start. An approximation that avoids zig-zag lines.
-    """
-    ts = df["timestamp"].astype(str)
-    legacy = ts.str.len() == 16  # 'YYYY-MM-DD HH:SS' vs 'YYYY-MM-DD HH:MM:SS'
-
-    parsed = pd.to_datetime(ts.where(~legacy), format="%Y-%m-%d %H:%M:%S", errors="coerce")
-
-    hour = pd.to_datetime(ts.where(legacy).str[:13], format="%Y-%m-%d %H", errors="coerce")
-    group = (hour != hour.shift()).cumsum()
-    pos = df.groupby(group).cumcount()
-    size = df.groupby(group)["timestamp"].transform("size")
-    step = (3600 / size).clip(upper=61)
-    block_start = legacy & ~legacy.shift(fill_value=False)
-    first_hour = block_start.groupby(group).transform("any")
-    offset = (3600 - (size - pos) * step).where(first_hour, pos * step)
-    approx = hour + pd.to_timedelta(offset, unit="s")
-
-    df["timestamp"] = parsed.where(~legacy, approx)
-    df = df.dropna(subset=["timestamp"])
-    return df.sort_values("timestamp", kind="stable").reset_index(drop=True)
-
-
 def build_figure(df):
     features = [f for f in FEATURES if f[0] in df and df[f[0]].notna().any()]
 
@@ -133,7 +104,9 @@ def main():
     parser.add_argument("--out", default=OUTPUT_FILE, help=f"output HTML (default: {OUTPUT_FILE})")
     args = parser.parse_args()
 
-    df = parse_timestamps(pd.DataFrame(fetch_records(args.url)))
+    df = pd.DataFrame(fetch_records(args.url))
+    df["timestamp"] = pd.to_datetime(df["timestamp"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
+    df = df.dropna(subset=["timestamp"]).sort_values("timestamp").reset_index(drop=True)
     if df.empty:
         sys.exit("[ERROR] No rows with a valid timestamp")
 

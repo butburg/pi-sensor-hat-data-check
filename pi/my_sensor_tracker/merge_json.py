@@ -20,7 +20,7 @@ def collect_data():
     records = []
     today = datetime.now().date()
 
-    # Oldest day first; rows inside a CSV are already in logging order
+    # Oldest day first
     for i in reversed(range(14)):
         date = today - timedelta(days=i)
         filename = os.path.join(DATA_DIR, f"{date}.csv")
@@ -36,13 +36,10 @@ def collect_data():
                 row["eco2"] = float(row["eco2"])
                 row["air_quality_percent"] = float(row["air_quality_percent"])
                 row["air_quality_score"] = float(row["air_quality_score"])
-                # gas_resistance (Ohm) only exists in rows logged after 2026-09-27
+                # gas_resistance (Ohm) is empty in rows logged before it was added
                 gas = row.get("gas_resistance")
                 row["gas_resistance"] = float(gas) if gas else None
                 records.append(row)
-
-    # No sort by timestamp string: rows logged before 2026-09-27 used "%H:%S"
-    # (minute missing) and would get shuffled within each hour
     return records
 
 def main():
