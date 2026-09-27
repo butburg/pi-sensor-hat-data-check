@@ -1,36 +1,90 @@
-## Pi HAT Sensor Data Collection & Visualization
+# Pi Sensor HAT — Data Collection & Visualization
 
-This project collects sensor data from a Raspberry Pi HAT, sends it via a Python server over the local network, and visualizes the collected data in a chart.
+A Raspberry Pi with the [Kitronik Air Quality Control HAT](https://kitronik.co.uk/blogs/resources/kitronik-air-quality-control-hat-raspberry-pi-introduction-quick-start-guide)
+logs temperature, humidity, pressure and air-quality values every minute. The data is
+served on the LAN, pulled into Home Assistant, and can be plotted locally as an
+interactive chart.
 
-### Features
-- Collects sensor data from Pi HAT
-- Python server sends data to LAN
-- Data is visualized in charts (see sensor_chart.html)
+## Data flow
 
-### Setup
-1. Clone this repository:
-	```bash
-	git clone <repo-url>
-	cd pi-sensor-hat-data-check
-	```
-2. Install dependencies:
-	```bash
-	uv pip install -r requirements.txt
-	```
-	(or use your preferred Python environment manager)
+```
+BME688 on HAT
+  └─ monitor.py (systemd: air-quality-monitor, every 60 s)
+       └─ data/YYYY-MM-DD.csv
+            └─ merge_json.py (cron, every 5 min) → data/two_week_merge.json (last 14 days)
+                 └─ http.server :8765 (systemd: csvserver)
+                      ├─ Home Assistant REST sensors (sensor.sensor_*)
+                      └─ visualize_sensors.py → sensor_chart.html
+```
 
-### Usage
-- Run the data collection and visualization:
-  ```bash
-  uv run python3 main.py
-  uv run python3 visualize_sensors.py
-  ```
-- Open `sensor_chart.html` in your browser to view the chart.
+## Repository layout
 
-### Files
-- `main.py`: Collects and sends sensor data
-- `visualize_sensors.py`: Processes and visualizes data
-- `sensor_chart.html`: Chart visualization
-- `pyproject.toml`: Project configuration
-- `.gitignore`, `.python-version`, `uv.lock`: Environment and dependency files
+| Path | What |
+|---|---|
+| `pi/` | Mirror of `~/pi-sensor-project/` on the Pi (`my_sensor_tracker/`, Kitronik `scripts/`, `requirements.txt`) |
+| `pi/system/` | Copies of the systemd units and the crontab entry on the Pi |
+| `visualize_sensors.py` | Local chart generator |
+| `AGENTS.md`, `.github/skills/` | Instructions and skills for coding agents working on this project |
 
+`pi/` is kept identical to the Pi: edit locally, then deploy (see below).
+
+## Local chart
+
+Requires [uv](https://docs.astral.sh/uv/) and access to the Pi on the LAN.
+
+```bash
+uv run visualize_sensors.py            # writes sensor_chart.html
+uv run visualize_sensors.py --help     # --url / --out options
+```
+
+Open `sensor_chart.html` in a browser. It shows one panel per value, with night hours
+(22:00–08:00) shaded. The file is generated, so it is not committed.
+
+## Working on the Pi
+
+SSH alias `pi-sensor` (`pi@<pi-host>`) is set up in `~/.ssh/config`.
+
+```bash
+# Deploy local changes
+rsync -av --exclude venv --exclude data --exclude __pycache__ --exclude '*.log' \
+  --exclude '*.bak-*' --exclude baselines.txt --exclude system \
+  pi/ pi-sensor:pi-sensor-project/
+
+# After changing monitor.py or config.py
+ssh pi-sensor 'sudo systemctl restart air-quality-monitor'
+
+# Live log
+ssh pi-sensor 'journalctl -u air-quality-monitor -f'
+```
+
+After a restart, the monitor recalibrates its baseline for about 5 minutes, so no rows
+are logged during that time.
+
+## Data format
+
+CSV columns: `timestamp, temperature, humidity, pressure (Pa), eco2, air_quality_percent,
+air_quality_score, gas_resistance (Ω)`. The merged JSON uses the same fields, with
+pressure in hPa. `gas_resistance` has been logged since 2026-09-27. Older rows have `null`.
+
+## About the values
+
+The HAT has **no real CO₂ sensor**. Its only gas sensor is a Bosch BME688, a metal-oxide
+sensor that reacts to volatile organic compounds (VOCs).
+
+- The Kitronik library derives `air_quality_percent`, `air_quality_score` and `eco2` from
+  the gas resistance and humidity. It uses its own formula, not Bosch BSEC. Because the
+  percent value is truncated to an integer, all three values move together in coarse steps
+  (for eCO₂: 513 → 545 → 579 → 614 ppm, about 6 % each).
+- Humidity is reported as whole percent.
+- `gas_resistance` is the raw, continuous sensor reading.
+
+In Home Assistant, a new history row only appears when a value *changes*. Long flat
+stretches in the history therefore mean the value stayed on one step, not that data is
+missing.
+
+## Known data quirk
+
+Rows logged on 2026-09-27 between 01:24 and 19:47 have timestamps in the form
+`YYYY-MM-DD HH:SS`: the minute was lost because of a bug that has since been fixed. The
+rows are still in the right order. `visualize_sensors.py` estimates their times inside
+each hour.
