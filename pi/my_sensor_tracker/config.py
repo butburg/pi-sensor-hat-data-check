@@ -54,11 +54,10 @@ UPDATE_INTERVAL = 60  # in seconds
 DATA_DIR = "data"
 BRIGHTNESS = 5  # LED brightness (0-100)
 
-# Temperature calibration for sensor offset correction.
-# Two points define a linear correction from sensor reading to real temperature.
-# Example: if the sensor reads 32°C but the real temperature is 22°C,
-# and a later point says 20°C sensor corresponds to 10°C real, then the
-# correction is "real = sensor - 10" for now.
+# Temperature calibration: two (sensor, actual) points define a linear
+# correction from sensor reading to real temperature. The HAT warms itself,
+# so the sensor reads high. The points below give "real = sensor - 10".
+# Measure your own points with a reference thermometer.
 TEMPERATURE_CALIBRATION = {
     "sensor_point_1": 32.0,
     "actual_point_1": 22.0,
