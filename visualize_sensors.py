@@ -5,9 +5,11 @@ Project: Pi Sensor HAT
 Description: Loads the merged 14-day JSON from the Pi and plots
              interactive line charts for every sensor feature.
 Usage: uv run visualize_sensors.py [--url URL] [--out FILE]
+       URL defaults to $SENSOR_DATA_URL, else raspberrypi.local.
 """
 
 import argparse
+import os
 import sys
 import time
 from datetime import timedelta
@@ -17,7 +19,9 @@ import plotly.graph_objects as go
 import requests
 from plotly.subplots import make_subplots
 
-DATA_URL = "http://<pi-host>:8765/two_week_merge.json"
+DATA_URL = os.environ.get(
+    "SENSOR_DATA_URL", "http://raspberrypi.local:8765/two_week_merge.json"
+)
 OUTPUT_FILE = "sensor_chart.html"
 
 # (column, label, unit)
