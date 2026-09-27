@@ -1,0 +1,9 @@
+KitronikAirQualityControlHAT
+RPi.GPIO
+pyserial
+smbus-cffi
+python-dotenv
+Pillow==9.5.0
+adafruit-circuitpython-bme680
+adafruit-circuitpython-ads1x15
+luma.oled

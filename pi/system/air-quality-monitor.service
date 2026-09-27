@@ -1,0 +1,16 @@
+[Unit]
+Description=Air Quality Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/pi-sensor-project/my_sensor_tracker
+Environment="PATH=/home/pi/pi-sensor-project/venv/bin"
+ExecStart=/home/pi/pi-sensor-project/venv/bin/python3 monitor.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

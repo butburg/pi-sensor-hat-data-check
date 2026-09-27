@@ -1,0 +1,1 @@
+*/5 * * * * /usr/bin/python3 /home/pi/pi-sensor-project/my_sensor_tracker/merge_json.py >> /home/pi/pi-sensor-project/my_sensor_tracker/merge_json.log 2>&1

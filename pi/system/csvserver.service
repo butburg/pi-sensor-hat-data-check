@@ -1,0 +1,12 @@
+[Unit]
+Description=Serves sensor CSV data over HTTP for local network access
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 8765
+WorkingDirectory=/home/pi/pi-sensor-project/my_sensor_tracker/data
+Restart=on-failure
+User=pi
+
+[Install]
+WantedBy=multi-user.target
