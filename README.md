@@ -37,7 +37,8 @@ uv run visualize_sensors.py            # writes sensor_chart.html
 uv run visualize_sensors.py --help     # --url / --out options
 ```
 
-Open `sensor_chart.html` in a browser. It shows one panel per value, with night hours
+Open `sensor_chart.html` in a browser. From WSL, `explorer.exe sensor_chart.html` opens it in
+the Windows default browser. The chart shows one panel per value, with night hours
 (22:00–08:00) shaded. The file is generated, so it is not committed.
 
 ## Working on the Pi
