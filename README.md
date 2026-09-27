@@ -1,5 +1,7 @@
 # Pi Sensor HAT — Data Collection & Visualization
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/O4O111DFT3)
+
 A Raspberry Pi with the [Kitronik Air Quality Control HAT](https://kitronik.co.uk/blogs/resources/kitronik-air-quality-control-hat-raspberry-pi-introduction-quick-start-guide)
 logs temperature, humidity, pressure and air-quality values every minute. The data is
 served on the LAN, pulled into Home Assistant, and can be plotted locally as an
